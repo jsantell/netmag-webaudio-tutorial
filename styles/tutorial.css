@@ -1,0 +1,35 @@
+body {
+  background-color: #333;
+  color: #eee;
+}
+
+canvas {
+  background-color: #000;
+}
+
+.container {
+  margin: 50px auto;
+  width: 1000px;
+}
+
+audio, input, div {
+  margin: 0 auto;
+  display: block;
+}
+
+a {
+  color: #ddd;
+}
+
+#credits {
+  width: 130px;
+}
+
+#freq-display {
+  font-size: 36px;
+  width: 100px;
+}
+
+#freq-display::after {
+  content: "hz"
+}

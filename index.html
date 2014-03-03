@@ -1,0 +1,69 @@
+<!DOCTYPE 5>
+<html>
+	<head>
+		<title>Net Magazine Web Audio Tutorial</title>
+		<link rel="stylesheet" href="styles/tutorial.css">
+	</head>
+	<body>
+	<div class="container">
+
+		<div id="credits"><a href="https://soundcloud.com/zircon-1/augment">Augment</a> by <a href="http://zirconmusic.com/">Zircon</a></div>
+		<audio id="audio-element" controls="controls">
+			<source src="audio/augment.mp3" type="audio/mpeg;"/>
+			<source src="audio/augment.ogg" type="audio/ogg; codecs=vorbis;"/>
+		</audio>
+		<input id="slider" type="range" min="100" max="5000" value="100"/>
+		<div id="freq-display">100</div>
+		<canvas id="canvas" width="1024" height="256"></canvas>
+		<script>
+			var ctx = new (window.AudioContext || window.webkitAudioContext)();
+			var audioEl = document.getElementById("audio-element");
+			var elSource = ctx.createMediaElementSource(audioEl);
+			var filter = ctx.createBiquadFilter();
+			var analyser = ctx.createAnalyser();
+			var proc = ctx.createScriptProcessor(1024, 1, 1);
+			var data = new Uint8Array(analyser.frequencyBinCount);
+			var canvas = document.getElementById("canvas");
+			var canvasCtx = canvas.getContext("2d");
+			canvasCtx.fillStyle = "white";
+			filter.type = "lowpass";
+			filter.frequency.value = 100;
+			
+			elSource.connect(filter);
+			filter.connect(analyser);
+			analyser.connect(proc);
+			analyser.connect(ctx.destination);
+
+			proc.onaudioprocess = onProcess;
+
+			/* Slider events */
+			var slider = document.getElementById("slider");
+			var freqDisplay = document.getElementById("freq-display");
+			if (slider.addEventListener) {
+				slider.addEventListener("change", onChange);
+			} else {
+				slider.attachEvent("onchange", onChange);
+			}
+
+			function onChange () {
+				filter.frequency.value = slider.value;
+				freqDisplay.innerHTML = slider.value;
+			}
+
+			function onProcess (e) {
+				analyser.getByteFrequencyData(data);
+				canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+				for (var i = 0, l = data.length; i < l; i++) {
+					canvasCtx.fillRect(
+						i,
+						-(canvas.height / 255) * data[i],
+						1,
+						canvas.height
+					);
+				}
+			}
+
+		</script>
+	</div>
+	</body>
+</html>
