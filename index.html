@@ -16,24 +16,37 @@
 		<div id="freq-display">100</div>
 		<canvas id="canvas" width="1024" height="256"></canvas>
 		<script>
+			// Check for `AudioContext` -- otherwise, check for the prefixed webkit
+			// version
 			var ctx = new (window.AudioContext || window.webkitAudioContext)();
 			var audioEl = document.getElementById("audio-element");
 			var elSource = ctx.createMediaElementSource(audioEl);
 			var filter = ctx.createBiquadFilter();
 			var analyser = ctx.createAnalyser();
-			var proc = ctx.createScriptProcessor(1024, 1, 1);
+
+			// Check to see if `createScriptProcessor` method is available, use it; otherwise,
+			// use the deprecated `createJavaScriptNode` method.
+			var proc = ctx[ctx.createScriptProcessor ?
+				'createScriptProcessor' :
+				'createJavaScriptNode'](1024, 1, 1);
+
 			var data = new Uint8Array(analyser.frequencyBinCount);
 			var canvas = document.getElementById("canvas");
 			var canvasCtx = canvas.getContext("2d");
 			canvasCtx.fillStyle = "white";
 			filter.type = "lowpass";
 			filter.frequency.value = 100;
-			
+
 			elSource.connect(filter);
 			filter.connect(analyser);
 			analyser.connect(proc);
-			analyser.connect(ctx.destination);
+			filter.connect(ctx.destination);
 
+			// Connect the processor back to the destination,
+			// as there is a bug in webkit/blink implementations
+			// that requires a connected output channel to call
+			// the `onaudioprocess` event.
+			proc.connect(ctx.destination);
 			proc.onaudioprocess = onProcess;
 
 			/* Slider events */
@@ -62,7 +75,6 @@
 					);
 				}
 			}
-
 		</script>
 	</div>
 	</body>
