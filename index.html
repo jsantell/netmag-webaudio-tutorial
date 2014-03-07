@@ -12,70 +12,10 @@
 			<source src="audio/augment.mp3" type="audio/mpeg;"/>
 			<source src="audio/augment.ogg" type="audio/ogg; codecs=vorbis;"/>
 		</audio>
-		<input id="slider" type="range" min="100" max="5000" value="100"/>
+		<input id="slider" type="range" min="100" max="22000" value="100"/>
 		<div id="freq-display">100</div>
 		<canvas id="canvas" width="1024" height="256"></canvas>
-		<script>
-			// Check for `AudioContext` -- otherwise, check for the prefixed webkit
-			// version
-			var ctx = new (window.AudioContext || window.webkitAudioContext)();
-			var audioEl = document.getElementById("audio-element");
-			var elSource = ctx.createMediaElementSource(audioEl);
-			var filter = ctx.createBiquadFilter();
-			var analyser = ctx.createAnalyser();
-
-			// Check to see if `createScriptProcessor` method is available, use it; otherwise,
-			// use the deprecated `createJavaScriptNode` method.
-			var proc = ctx[ctx.createScriptProcessor ?
-				'createScriptProcessor' :
-				'createJavaScriptNode'](1024, 1, 1);
-
-			var data = new Uint8Array(analyser.frequencyBinCount);
-			var canvas = document.getElementById("canvas");
-			var canvasCtx = canvas.getContext("2d");
-			canvasCtx.fillStyle = "white";
-			filter.type = "lowpass";
-			filter.frequency.value = 100;
-
-			elSource.connect(filter);
-			filter.connect(analyser);
-			analyser.connect(proc);
-			filter.connect(ctx.destination);
-
-			// Connect the processor back to the destination,
-			// as there is a bug in webkit/blink implementations
-			// that requires a connected output channel to call
-			// the `onaudioprocess` event.
-			proc.connect(ctx.destination);
-			proc.onaudioprocess = onProcess;
-
-			/* Slider events */
-			var slider = document.getElementById("slider");
-			var freqDisplay = document.getElementById("freq-display");
-			if (slider.addEventListener) {
-				slider.addEventListener("change", onChange);
-			} else {
-				slider.attachEvent("onchange", onChange);
-			}
-
-			function onChange () {
-				filter.frequency.value = slider.value;
-				freqDisplay.innerHTML = slider.value;
-			}
-
-			function onProcess (e) {
-				analyser.getByteFrequencyData(data);
-				canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-				for (var i = 0, l = data.length; i < l; i++) {
-					canvasCtx.fillRect(
-						i,
-						-(canvas.height / 255) * data[i],
-						1,
-						canvas.height
-					);
-				}
-			}
-		</script>
+		<script src="scripts/demo.js"></script>
 	</div>
 	</body>
 </html>
