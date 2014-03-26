@@ -53,8 +53,6 @@ function onProcess (e) {
   for (var i = 0, l = data.length; i < l; i++) {
     var hue = (-i/data.length * 200) + 200;
     var height = canvas.height * data[i] / 255;
-    if (i===10)
-      console.log(height, canvas.height-height);
     canvasCtx.fillStyle = 'hsl(' + hue + ', 100%, 50%)';
     canvasCtx.fillRect(i, canvas.height - height, 1, height);
   }
